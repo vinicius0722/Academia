@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>App Academia - Protótipo</title>
+  <meta name="description" content="Protótipo de aplicativo de academia (web) - aluno, instrutor e administrador." />
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1220; --muted:#9aa4b2; --accent:#06b6d4; --glass: rgba(255,255,255,0.04);
+      --success:#16a34a; --danger:#ef4444; --radius:12px; --shadow: 0 6px 18px rgba(2,6,23,0.6);
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:linear-gradient(180deg,#071026 0%, #0f1724 100%);color:#e6eef6;display:flex;align-items:center;justify-content:center;padding:24px}
+
+    .container{width:1100px;max-width:100%;display:grid;grid-template-columns:340px 1fr;gap:20px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);}
+
+    /* left */
+    .brand{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+    .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#3b82f6);display:flex;align-items:center;justify-content:center;font-weight:700;color:#052024}
+    h1{font-size:18px;margin:0}
+    p.lead{margin:6px 0 0;color:var(--muted);font-size:13px}
+
+    .profile{display:flex;gap:12px;align-items:center;margin:14px 0 8px}
+    .avatar{width:56px;height:56px;border-radius:10px;background:linear-gradient(180deg,#fff2 0%, #fff0 100%);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--muted)}
+
+    nav{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+    button.tab{background:transparent;border:1px solid transparent;padding:10px;border-radius:10px;text-align:left;color:var(--muted);cursor:pointer}
+    button.tab.active{background:var(--glass);border-color:rgba(255,255,255,0.04);color:#e6eef6}
+
+    small.hint{display:block;color:var(--muted);margin-top:12px;font-size:12px}
+
+    /* right */
+    .header{display:flex;align-items:center;justify-content:space-between}
+    .search{display:flex;gap:8px;align-items:center}
+    .search input{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px 12px;border-radius:10px;color:inherit}
+
+    .dashboard{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:12px}
+
+    .card.padded{padding:16px}
+
+    .section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    h2.section{font-size:15px;margin:0}
+    .small{font-size:13px;color:var(--muted)}
+
+    .exercise{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.015));padding:10px;border-radius:10px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.02)}
+    .exercise h3{margin:0;font-size:14px}
+    .exercise p{margin:6px 0 0;color:var(--muted);font-size:13px}
+    .exercise .meta{display:flex;gap:8px;margin-top:8px}
+    .btn{display:inline-block;padding:8px 10px;border-radius:8px;background:var(--accent);color:#052024;font-weight:600;border:none;cursor:pointer}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);font-weight:600}
+
+    .log{max-height:260px;overflow:auto;padding-right:8px}
+    .log-item{padding:8px;border-radius:8px;background:rgba(255,255,255,0.01);margin-bottom:8px;border:1px solid rgba(255,255,255,0.02)}
+    .form-row{display:flex;gap:8px;margin-top:8px}
+    .form-row input, .form-row select{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+
+    /* modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.7);display:flex;align-items:center;justify-content:center}
+    .modal{width:760px;max-width:95%;background:linear-gradient(180deg,#071026,#071826);padding:18px;border-radius:14px}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+
+    footer.note{margin-top:12px;color:var(--muted);font-size:13px}
+
+    /* responsiveness */
+    @media (max-width:980px){
+      .container{grid-template-columns:1fr;}
+      .dashboard{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <aside class="card">
+      <div class="brand">
+        <div class="logo">G</div>
+        <div>
+          <h1>GymTrack</h1>
+          <p class="lead">Protótipo - Aplicativo de Academia</p>
+        </div>
+      </div>
+
+      <div class="profile">
+        <div class="avatar" id="leftAvatar">A</div>
+        <div>
+          <strong id="leftName">Visitante</strong>
+          <div class="small" id="leftRole">Convidado</div>
+        </div>
+      </div>
+
+      <nav>
+        <button class="tab active" data-tab="dashboard">Dashboard</button>
+        <button class="tab" data-tab="treinos">Fichas de Treino</button>
+        <button class="tab" data-tab="registro">Registrar Execução</button>
+        <button class="tab" data-tab="admin">Admin</button>
+      </nav>
+
+      <small class="hint">Use o painel ao lado: faça login com usuário pré-cadastrado (veja ajuda).</small>
+      <div style="margin-top:12px">
+        <button class="btn" id="openLogin">Entrar / Trocar Conta</button>
+        <button class="btn ghost" id="seedData">Carregar dados exemplo</button>
+      </div>
+
+      <footer class="note">Feito para entrega AV2 — Modelo didático</footer>
+    </aside>
+
+    <main class="card">
+      <div class="header">
+        <div class="search">
+          <input id="search" placeholder="Pesquisar exercício ou aluno..." />
+        </div>
+        <div>
+          <span class="small">Usuário: <strong id="headerUser">Convidado</strong></span>
+        </div>
+      </div>
+
+      <div class="dashboard">
+        <section class="card padded">
+          <div class="section-title">
+            <h2 class="section">Minha Ficha</h2>
+            <div class="small">Última atualização: <span id="lastUpdate">-</span></div>
+          </div>
+
+          <div id="exercisesList">
+            <p class="small">Nenhum treino selecionado. Selecione um aluno ou carregue dados de exemplo.</p>
+          </div>
+
+          <div style="margin-top:12px">
+            <button class="btn" id="openAddExecution">Registrar execução</button>
+            <button class="btn ghost" id="refreshView">Atualizar</button>
+          </div>
+        </section>
+
+        <aside class="card padded">
+          <div class="section-title">
+            <h2 class="section">Atividades recentes</h2>
+            <div class="small">Log</div>
+          </div>
+          <div class="log" id="activityLog">
+            <p class="small">Sem atividades.</p>
+          </div>
+
+          <div style="margin-top:10px">
+            <label>Selecionar perfil</label>
+            <select id="selectProfile">
+              <option value="aluno_01">Aluno: João Silva</option>
+              <option value="aluno_02">Aluno: Maria Costa</option>
+              <option value="instrutor_01">Instrutor: Paula</option>
+              <option value="admin_01">Administrador</option>
+            </select>
+          </div>
+
+        </aside>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div id="modalRoot" style="display:none"></div>
+
+  <template id="loginTpl">
+    <div class="modal-backdrop">
+      <div class="modal">
+        <h3>Login Rápido (demo)</h3>
+        <p class="small">Use um dos perfis de exemplo ou crie um login local.</p>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <div style="flex:1">
+            <label>Usuário</label>
+            <input id="loginUser" placeholder="ex: aluno_01" />
+          </div>
+          <div style="flex:1">
+            <label>Senha</label>
+            <input id="loginPass" placeholder="qualquer" />
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
+          <button class="btn ghost" id="closeLoginBtn">Cancelar</button>
+          <button class="btn" id="doLoginBtn">Entrar</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="executionTpl">
+    <div class="modal-backdrop">
+      <div class="modal">
+        <h3>Registrar Execução</h3>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <div style="flex:1">
+            <label>Exercício</label>
+            <select id="execExercise"></select>
+          </div>
+          <div style="width:120px">
+            <label>Séries</label>
+            <input id="execSeries" type="number" value="3" />
+          </div>
+          <div style="width:120px">
+            <label>Repetições</label>
+            <input id="execReps" type="number" value="10" />
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <div style="flex:1">
+            <label>Carga (kg)</label>
+            <input id="execLoad" type="number" value="20" />
+          </div>
+          <div style="flex:1">
+            <label>Observações</label>
+            <input id="execNote" placeholder="opcional" />
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
+          <button class="btn ghost" id="closeExecBtn">Cancelar</button>
+          <button class="btn" id="saveExecBtn">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    // --- Dados de exemplo (localStorage) ---
+    const SAMPLE = {
+      users: {
+        'aluno_01': {id:'aluno_01', name:'João Silva', role:'Aluno', avatar:'JS', ficha: 'ficha_joao'},
+        'aluno_02': {id:'aluno_02', name:'Maria Costa', role:'Aluno', avatar:'MC', ficha: 'ficha_maria'},
+        'instrutor_01': {id:'instrutor_01', name:'Paula Menezes', role:'Instrutor', avatar:'P',},
+        'admin_01': {id:'admin_01', name:'Admin', role:'Administrador', avatar:'ADM',}
+      },
+      fichas: {
+        'ficha_joao': {id:'ficha_joao', owner:'aluno_01', updated: Date.now(), exercises: [
+          {id:'ex1', name:'Supino Reto', series:3, reps:10, note:'Aumentar 2,5kg quando completar 3x10'},
+          {id:'ex2', name:'Agachamento Livre', series:3, reps:8, note:'Concentrar movimento'},
+          {id:'ex3', name:'Remada Curvada', series:3, reps:10}
+        ]},
+        'ficha_maria': {id:'ficha_maria', owner:'aluno_02', updated: Date.now(), exercises:[
+          {id:'ex4', name:'Leg Press', series:4, reps:12},
+          {id:'ex5', name:'Puxada Frente', series:3, reps:10}
+        ]}
+      },
+      logs: []
+    }
+
+    // --- helpers ---
+    const $ = sel => document.querySelector(sel)
+    const qs = sel => Array.from(document.querySelectorAll(sel))
+
+    function saveToStorage(data){ localStorage.setItem('gym_app_data', JSON.stringify(data)) }
+    function loadFromStorage(){
+      const raw = localStorage.getItem('gym_app_data')
+      if(!raw) { saveToStorage(SAMPLE); return SAMPLE }
+      try { return JSON.parse(raw) } catch(e){ saveToStorage(SAMPLE); return SAMPLE }
+    }
+
+    let DB = loadFromStorage()
+    let CURRENT = null // current user object
+
+    // --- UI render ---
+    function setProfile(user){
+      if(!user){ $('#leftName').textContent = 'Convidado'; $('#leftRole').textContent='Convidado'; $('#leftAvatar').textContent='G'; $('#headerUser').textContent='Convidado'; return }
+      $('#leftName').textContent = user.name; $('#leftRole').textContent = user.role; $('#leftAvatar').textContent = user.avatar || user.name.slice(0,2).toUpperCase(); $('#headerUser').textContent = user.name
+    }
+
+    function renderExercisesForCurrent(){
+      const container = $('#exercisesList')
+      container.innerHTML=''
+      if(!CURRENT || CURRENT.role !== 'Aluno') { container.innerHTML = '<p class="small">Faça login como aluno para ver a ficha.</p>'; return }
+      const ficha = DB.fichas[CURRENT.ficha]
+      if(!ficha) { container.innerHTML = '<p class="small">Aluno sem ficha atribuída.</p>'; return }
+      $('#lastUpdate').textContent = new Date(ficha.updated).toLocaleString()
+      ficha.exercises.forEach(ex => {
+        const div = document.createElement('div'); div.className='exercise'
+        div.innerHTML = `<h3>${ex.name}</h3><p class="small">Séries: ${ex.series} · Reps: ${ex.reps || '-'} ${ex.note? '· Nota: '+ex.note:''}</p>`
+        const btn = document.createElement('button'); btn.className='btn ghost'; btn.textContent='Registrar'; btn.onclick = ()=> openExecutionModal(ex.id)
+        const btn2 = document.createElement('button'); btn2.className='btn'; btn2.style.marginLeft='8px'; btn2.textContent='Detalhes'; btn2.onclick = ()=> alert(JSON.stringify(ex, null, 2))
+        div.appendChild(btn); div.appendChild(btn2)
+        container.appendChild(div)
+      })
+    }
+
+    function renderLog(){
+      const el = $('#activityLog'); el.innerHTML=''
+      if(!DB.logs.length) { el.innerHTML = '<p class="small">Sem atividades.</p>'; return }
+      DB.logs.slice().reverse().forEach(l => {
+        const d = document.createElement('div'); d.className='log-item'
+        d.innerHTML = `<strong>${l.title}</strong><div class="small">${new Date(l.when).toLocaleString()}</div><div class="small">${l.desc || ''}</div>`
+        el.appendChild(d)
+      })
+    }
+
+    function openModal(templateId){
+      const tpl = document.getElementById(templateId)
+      const clone = tpl.content.cloneNode(true)
+      const root = document.getElementById('modalRoot')
+      root.innerHTML=''
+      root.appendChild(clone)
+      root.style.display = 'block'
+      // add close handlers
+      root.querySelectorAll('#closeLoginBtn, #closeExecBtn').forEach(btn => btn && btn.addEventListener('click', closeModal))
+    }
+    function closeModal(){ document.getElementById('modalRoot').style.display='none'; document.getElementById('modalRoot').innerHTML='' }
+
+    // --- execution modal actions ---
+    function openExecutionModal(exId){
+      openModal('executionTpl')
+      const select = document.getElementById('execExercise')
+      select.innerHTML=''
+      const ficha = DB.fichas[CURRENT.ficha]
+      ficha.exercises.forEach(e => select.insertAdjacentHTML('beforeend', `<option value="${e.id}">${e.name}</option>`))
+      if(exId) select.value = exId
+      document.getElementById('saveExecBtn').addEventListener('click', saveExecution)
+    }
+
+    function saveExecution(){
+      const exerciseId = document.getElementById('execExercise').value
+      const series = Number(document.getElementById('execSeries').value)
+      const reps = Number(document.getElementById('execReps').value)
+      const load = Number(document.getElementById('execLoad').value)
+      const note = document.getElementById('execNote').value
+      const ficha = DB.fichas[CURRENT.ficha]
+      const ex = ficha.exercises.find(x=>x.id===exerciseId) || {name: 'Desconhecido'}
+      const log = {title: `Execução: ${ex.name}`, when: Date.now(), desc: `Séries ${series}x${reps}, carga ${load}kg. ${note||''}`, by: CURRENT.id}
+      DB.logs.push(log); saveToStorage(DB); renderLog(); closeModal(); alert('Registro salvo com sucesso')
+    }
+
+    // --- seed data ---
+    $('#seedData').addEventListener('click', ()=>{ DB = SAMPLE; saveToStorage(DB); renderAll(); alert('Dados de exemplo carregados.') })
+
+    // quick login
+    $('#openLogin').addEventListener('click', ()=> openModal('loginTpl'))
+    document.addEventListener('click', e=>{
+      if(e.target && e.target.id==='doLoginBtn') doLogin()
+    })
+
+    function doLogin(){
+      const user = $('#loginUser').value.trim() || $('#selectProfile').value
+      const pass = $('#loginPass').value
+      const u = DB.users[user]
+      if(!u){ alert('Usuário não encontrado no demo. Use um dos perfis: aluno_01, aluno_02, instrutor_01, admin_01'); return }
+      CURRENT = u
+      setProfile(CURRENT)
+      renderAll()
+      closeModal()
+      DB.logs.push({title:`Login: ${CURRENT.name}`, when:Date.now(), desc:`Entrou no sistema como ${CURRENT.role}`, by: CURRENT.id})
+      saveToStorage(DB); renderLog()
+    }
+
+    // profile selector quick-switch
+    $('#selectProfile').addEventListener('change', (e)=>{
+      const id = e.target.value
+      CURRENT = DB.users[id]
+      setProfile(CURRENT)
+      renderAll()
+    })
+
+    // tabs
+    qs('.tab').forEach(t=> t.addEventListener('click', (ev)=>{
+      qs('.tab').forEach(x=>x.classList.remove('active'))
+      ev.currentTarget.classList.add('active')
+      const tab = ev.currentTarget.dataset.tab
+      if(tab==='dashboard') window.scrollTo({top:0, behavior:'smooth'})
+      if(tab==='registro') openExecutionModal()
+      if(tab==='treinos') alert('Na versão demo, use a lista de exercícios do aluno selecionado.')
+      if(tab==='admin') alert('Painel administrativo minimal (edição via localStorage).')
+    }))
+
+    $('#openAddExecution').addEventListener('click', ()=>{
+      if(!CURRENT || CURRENT.role !== 'Aluno'){ alert('Faça login como Aluno para registrar execução.'); return }
+      openExecutionModal()
+    })
+
+    $('#refreshView').addEventListener('click', renderAll)
+
+    function renderAll(){ renderExercisesForCurrent(); renderLog(); populateExecSelects(); }
+
+    function populateExecSelects(){
+      // nothing complex for now
+    }
+
+    // initialize
+    (function init(){
+      // if no user, default to aluno_01 for demo convenience
+      if(!CURRENT) CURRENT = DB.users['aluno_01']
+      setProfile(CURRENT)
+      renderAll()
+    })()
+
+    // small UX: search
+    $('#search').addEventListener('input', (e)=>{
+      const q = e.target.value.toLowerCase().trim()
+      if(!q) return renderAll()
+      // filter exercises shown
+      const ficha = DB.fichas[CURRENT.ficha]
+      const container = $('#exercisesList')
+      container.innerHTML=''
+      ficha.exercises.filter(ex => ex.name.toLowerCase().includes(q)).forEach(ex=>{
+        const div = document.createElement('div'); div.className='exercise'
+        div.innerHTML = `<h3>${ex.name}</h3><p class="small">Séries: ${ex.series} · Reps: ${ex.reps || '-'} ${ex.note? '· Nota: '+ex.note:''}</p>`
+        container.appendChild(div)
+      })
+      if(!container.children.length) container.innerHTML = '<p class="small">Nenhum resultado</p>'
+    })
+
+  </script>
+</body>
+</html>
